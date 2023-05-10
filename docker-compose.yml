@@ -1,0 +1,41 @@
+version: '3'
+services:
+    web:
+        build:
+            context: ./
+            dockerfile: docker/Dockerfile
+        command: python /django/manage.py runserver 0.0.0.0:8000
+        user: '1000:1000'
+        volumes:
+            - ./:/django/
+        ports:
+            - "80:8000"
+        depends_on:
+            - pgsql
+        networks:
+            techotest:
+                ipv4_address: 172.24.0.2
+    pgsql:
+        image: 'postgres:15'
+        environment:
+            POSTGRES_DB: '${POSTGRES_DB}'
+            POSTGRES_USER: '${POSTGRES_USER}'
+            POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+        volumes:
+            - ./database/pgsql:/var/lib/postgresql/data
+        user: '1000:1000'
+        networks:
+            techotest:
+                ipv4_address: 172.24.0.3
+networks:
+    techotest:
+        driver: bridge
+        ipam:
+            config:
+                -   subnet: 172.24.0.0/16
+                    gateway: 172.24.0.1
+volumes:
+    techotest-pgsql:
+        driver: local
+    fastapi-redis:
+        driver: local
